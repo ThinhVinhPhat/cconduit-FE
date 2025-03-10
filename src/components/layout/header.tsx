@@ -1,0 +1,43 @@
+import { NavLink, useLocation } from "react-router";
+
+function Header() {
+  const location = useLocation();
+  return (
+    <nav className="navbar navbar-light">
+      <div className="container">
+        <a className="navbar-brand" href="/">
+          conduit
+        </a>
+        <ul className="nav navbar-nav pull-xs-right">
+          <li className="nav-item">
+            <NavLink className="nav-link" to="/">
+              Home
+            </NavLink>
+          </li>
+          <li className="nav-item">
+            <a
+              className={`nav-link ${
+                location.pathname == "/login" ? "active" : ""
+              }`}
+              href="/login"
+            >
+              Sign in
+            </a>
+          </li>
+          <li className="nav-item">
+            <a
+              className={`nav-link ${
+                location.pathname == "/register" ? "active" : ""
+              }`}
+              href="/register"
+            >
+              Sign up
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  );
+}
+
+export default Header;
