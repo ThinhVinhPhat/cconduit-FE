@@ -1,22 +1,28 @@
-import { NavLink } from "react-router-dom";
 import { Tag } from "../../types/tags";
 
 type TagListProps = {
   tags: Tag[];
+  onAddTags: (tag: Tag) => void;
+  onHandleToggle: (toggle: string) => void;
 };
 
-function TagList({ tags }: TagListProps) {
+function TagList({ tags, onAddTags, onHandleToggle }: TagListProps) {
+  const handleClickTags = (tag: Tag) => {
+    onAddTags(tag);
+    onHandleToggle("tags");
+  };
+
   return (
     <div className="tag-list">
       {tags.map((tag) => {
         return (
-          <NavLink
-            to={`/tags/${tag.slug}`}
-            key={tag.slug}
+          <button
+            onClick={() => handleClickTags(tag)}
+            key={tag.id}
             className="tag-pill tag-default"
           >
-            {tag.name}
-          </NavLink>
+            {tag.title}
+          </button>
         );
       })}
     </div>

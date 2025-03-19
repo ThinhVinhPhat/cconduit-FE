@@ -1,3 +1,4 @@
+import { usePost } from "../../hooks/usePost";
 import { Article } from "../../types";
 
 export type ArticlePreviewProps = {
@@ -13,12 +14,12 @@ function ArticlePreview({ article }: ArticlePreviewProps) {
         </a>
         <div className="info">
           <a href="/profile/eric-simons" className="author">
-            {article.user.name}
+            {article.author.username}
           </a>
           <span className="date">{article.createdAt}</span>
         </div>
-        <button className="btn btn-outline-primary btn-sm pull-xs-right">
-          <i className="ion-heart" /> {article.totalLike}
+        <button className="btn  btn-sm pull-xs-right">
+          <i className="ion-heart" /> {article.totalLike || 0}
         </button>
       </div>
       <a

@@ -1,13 +1,17 @@
+import { usePost } from "../../hooks/usePost";
 function SettingPage() {
+  const { me } = usePost();
+  const { handleLogout } = usePost();
+
   return (
     <div className="settings-page">
       <div className="container page">
         <div className="row">
           <div className="col-md-6 offset-md-3 col-xs-12">
             <h1 className="text-xs-center">Your Settings</h1>
-            <ul className="error-messages">
+            {/* <ul className="error-messages">
               <li>That name is required</li>
-            </ul>
+            </ul> */}
             <form>
               <fieldset>
                 <fieldset className="form-group">
@@ -22,6 +26,7 @@ function SettingPage() {
                     className="form-control form-control-lg"
                     type="text"
                     placeholder="Your Name"
+                    defaultValue={me?.name}
                   />
                 </fieldset>
                 <fieldset className="form-group">
@@ -29,7 +34,7 @@ function SettingPage() {
                     className="form-control form-control-lg"
                     rows={8}
                     placeholder="Short bio about you"
-                    defaultValue={""}
+                    defaultValue={me?.description}
                   />
                 </fieldset>
                 <fieldset className="form-group">
@@ -37,6 +42,7 @@ function SettingPage() {
                     className="form-control form-control-lg"
                     type="text"
                     placeholder="Email"
+                    defaultValue={me?.email}
                   />
                 </fieldset>
                 <fieldset className="form-group">
@@ -52,7 +58,10 @@ function SettingPage() {
               </fieldset>
             </form>
             <hr />
-            <button className="btn btn-outline-danger">
+            <button
+              onClick={() => handleLogout()}
+              className="btn btn-outline-danger"
+            >
               Or click here to logout.
             </button>
           </div>

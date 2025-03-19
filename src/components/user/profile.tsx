@@ -7,7 +7,7 @@ type ProfileProps = {
 };
 
 function Profile({ isUser }: ProfileProps) {
-  const { favoriteArticles } = usePost();
+  const { favoritePost, me, toggle, posts } = usePost();
   return (
     <div className="profile-page">
       <div className="user-info">
@@ -15,7 +15,7 @@ function Profile({ isUser }: ProfileProps) {
           <div className="row">
             <div className="col-xs-12 col-md-10 offset-md-1">
               <img src="http://i.imgur.com/Qr71crq.jpg" className="user-img" />
-              <h4>Eric Simons</h4>
+              <h4>{me?.name}</h4>
               <p>
                 Cofounder @GoThinkster, lived in Aol's HQ for a few months,
                 kinda looks like Peeta from the Hunger Games
@@ -39,11 +39,29 @@ function Profile({ isUser }: ProfileProps) {
       <div className="container">
         <div className="row">
           <div className="col-xs-12 col-md-10 offset-md-1">
-            <Toggle currentPage="profile" />
-            {favoriteArticles.map((article) => (
-              <ArticlePreview article={article} />
-            ))}
-            <Pagination />
+            <Toggle currentPage="personal" />
+
+            {toggle === "personal" ? (
+              posts && posts.length > 0 ? (
+                <>
+                  {posts.map((article) => (
+                    <ArticlePreview key={article.id} article={article} />
+                  ))}
+                  <Pagination />
+                </>
+              ) : (
+                <span>No articles are here... yet.</span>
+              )
+            ) : favoritePost && favoritePost.length > 0 ? (
+              <>
+                {favoritePost.map((article) => (
+                  <ArticlePreview key={article.id} article={article} />
+                ))}
+                <Pagination />
+              </>
+            ) : (
+              <span>No articles are here... yet.</span>
+            )}
           </div>
         </div>
       </div>

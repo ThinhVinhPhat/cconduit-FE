@@ -1,6 +1,9 @@
 import { NavLink } from "react-router";
+import { usePost } from "../../hooks/usePost";
 
 function UserHeader() {
+  const { me } = usePost();
+
   return (
     <nav className="navbar navbar-light">
       <div className="container">
@@ -9,7 +12,6 @@ function UserHeader() {
         </a>
         <ul className="nav navbar-nav pull-xs-right">
           <li className="nav-item">
-            {/* Add "active" class when you're on that page" */}
             <NavLink className="nav-link" to="/">
               Home
             </NavLink>
@@ -30,8 +32,8 @@ function UserHeader() {
           </li>
           <li className="nav-item">
             <NavLink className="nav-link" to="/profile/eric-simons">
-              <img src="" className="user-pic" />
-              Eric Simons
+              <img src={me?.image} className="user-pic" />
+              {me?.name}
             </NavLink>
           </li>
         </ul>

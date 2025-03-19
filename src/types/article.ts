@@ -1,11 +1,14 @@
 export interface Article {
   id: string;
-  userId: string;
   title: string;
   shortDescription: string;
   description: string;
   slug: string;
-  author: string;
+  author: {
+    username: string;
+    bio: string;
+    image: string;
+  };
   createdAt: string;
   totalLike: number;
   tagList: string[];

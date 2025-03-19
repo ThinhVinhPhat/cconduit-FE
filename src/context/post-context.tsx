@@ -7,15 +7,24 @@ import {
 } from "react";
 import { Article } from "../types";
 import Cookies from "js-cookie";
-import { useGetPost } from "../hooks/query/usePost";
-import { login, register } from "../apis/auth/login";
-import { usePersonalPosts } from "../hooks/query/usePersonalPost";
+import { useGetPost } from "../hooks/query/article/usePosts";
+import { login, register } from "../apis/auth";
+import { usePersonalPosts } from "../hooks/query/article/usePersonalPost";
+import { useCreatePost } from "../hooks/mutation/useCreatePost";
+import { useGetMe } from "../hooks/query/user/useGetMe";
+import { User } from "../types/user";
+import { useGetTag } from "../hooks/query/tag/useGetTags";
+import { Tag } from "../types/tags";
+import { useFavoritePosts } from "../hooks/query/article/useGetFavorite";
+import useGetByTags from "../hooks/query/article/useGetByTag";
+import { useAddFavorite } from "../hooks/mutation/useAddFavorite";
 
 type PostContextType = {
   posts: Article[] | undefined;
+  favoritePost: Article[] | undefined;
   login: boolean;
+  tags: Tag[];
   isLogin: (login: boolean) => void;
-  favoriteArticles: Article[];
   toggle: string;
   handleToggle: (toggle: string) => void;
   data?: Article[] | undefined;
@@ -27,28 +36,15 @@ type PostContextType = {
   page: number;
   handleSetPage: (page: number) => void;
   totalPage: number;
+  createArticle: (data: Article) => boolean;
+  me: User | null;
+  handleLogout: () => void;
+  currentTag: Tag[];
+  handleAddTags: (tag: Tag) => void;
+  handleDeleteTags: (tag: Tag) => void;
+  handleAddFavorite: (articleId: string) => void;
+  currentFavorite: string[];
 };
-
-const sampleArticles: Article[] = [
-  {
-    id: "cm7o836e20000trv0i6y4m77e",
-    userId: "cm7niwxnb0000tr0cqt87md4p",
-    title: "Article title",
-    shortDescription: "Article shortDescription",
-    description: "Article description",
-    slug: "article-title",
-    author: "Article author",
-    createdAt: "2025-01-20",
-    totalLike: 29,
-    tagList: ["realworld", "implementations"],
-    user: {
-      id: "cm7niwxnb0000tr0cqt87md4p",
-      username: "Article author",
-      email: "article@author.com",
-      image: "https://i.imgur.com/Qr71crq.jpg",
-    },
-  },
-];
 
 const PostContext = createContext<PostContextType | null>(null);
 
@@ -56,18 +52,24 @@ export default PostContext;
 
 export const PostProvider = ({ children }: PropsWithChildren) => {
   const [dataPost, setDataPost] = useState<Article[]>([]);
-  const [favoriteArticles, setFavoriteArticles] = useState<Article[]>([]);
+  const [currentTag, setCurrentTag] = useState<Tag[]>([]);
+  const [currentFavorite, setCurrentFavorite] = useState<string[]>([]);
   const [userLogin, setUserLogin] = useState(false);
   const [toggle, setToggle] = useState("personal");
   const { data, isLoading } = useGetPost();
+  const { data: favoritePost } = useFavoritePosts();
+  const { data: tagsPost } = useGetByTags(currentTag);
+  const { data: me } = useGetMe();
+  const { data: tags } = useGetTag();
   const { data: personalPosts, isLoading: personalPostsLoading } =
-    usePersonalPosts();
+    usePersonalPosts(me?.name || "");
+  const { mutate: mutateFavorite } = useAddFavorite();
   const [page, setPage] = useState(1);
   const [error, setError] = useState("");
+  const { mutate: mutatePost } = useCreatePost();
   const limit = 10;
 
   useEffect(() => {
-    setFavoriteArticles(sampleArticles);
     const accessToken = Cookies.get("accessToken");
     if (accessToken) {
       setUserLogin(true);
@@ -75,13 +77,25 @@ export const PostProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   useEffect(() => {
-    if (toggle === "personal") {
-      setDataPost(personalPosts);
-    } else {
-      setDataPost(data.articles);
+    if (favoritePost && favoritePost.length > 0) {
+      const favoriteId = favoritePost.map((item: Article) => item.id);
+      setCurrentFavorite(favoriteId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toggle]);
+  }, [favoritePost]);
+
+  useEffect(() => {
+    if (currentTag && currentTag.length > 0) {
+      console.log(tagsPost);
+
+      setDataPost(() => tagsPost.articles);
+    } else {
+      if (toggle === "personal") {
+        setDataPost(personalPosts.articles);
+      } else {
+        setDataPost(data.articles);
+      }
+    }
+  }, [data.articles, personalPosts.articles, toggle, currentTag]);
 
   //toggle post type
   const handleToggle = (toggle: string) => {
@@ -106,7 +120,7 @@ export const PostProvider = ({ children }: PropsWithChildren) => {
           expires: 1,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.response?.data.statusCode === 404) {
         setError("Invalid email or password");
       }
@@ -124,19 +138,63 @@ export const PostProvider = ({ children }: PropsWithChildren) => {
       Cookies.set("accessToken", response.data.accessToken, {
         expires: 1,
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error.response?.status === 400) {
         setError("Email already exists");
       }
     }
   };
+  //logout
+  const handleLogout = () => {
+    Cookies.remove("accessToken");
+    setUserLogin(false);
+  };
+  //create Article
+  const createArticle = (data: Article) => {
+    try {
+      mutatePost(data);
+      return true;
+    } catch (error) {
+      console.log("Failed creating article", error);
+
+      return false;
+    }
+  };
+
+  //handle add tags
+  const handleAddTags = (tag: Tag) => {
+    const existTag = currentTag.find((item) => tag.title == item.title);
+    if (existTag) {
+      return;
+    }
+    if (tag) {
+      setCurrentTag((prev: Tag[]) => [...prev, tag]);
+    }
+  };
+  //handle delete tags
+  const handleDeleteTags = (tag: Tag) => {
+    setCurrentTag(currentTag.filter((item) => item.title != tag.title));
+  };
+
+  //handle add favorite
+  const handleAddFavorite = (articleId: string) => {
+    try {
+      mutateFavorite(articleId);
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  };
 
   const memoizedValue = useMemo(() => {
     return {
-      posts: dataInPage,
+      me,
+      favoritePost,
+      tags,
+      posts: dataPost ? dataInPage : [],
       login: userLogin,
       isLogin: setUserLogin,
-      favoriteArticles,
       toggle,
       handleToggle,
       isLoading,
@@ -147,17 +205,31 @@ export const PostProvider = ({ children }: PropsWithChildren) => {
       handleRegister,
       error,
       personalPostsLoading,
+      createArticle,
+      handleLogout,
+      handleAddTags,
+      currentTag,
+      handleDeleteTags,
+      handleAddFavorite,
+      currentFavorite,
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    currentFavorite,
+    me,
+    favoritePost,
+    dataPost,
     dataInPage,
     isLoading,
     userLogin,
-    favoriteArticles,
+    favoritePost,
     toggle,
     page,
     totalPage,
     error,
     personalPostsLoading,
+    handleLogout,
+    currentTag,
   ]);
 
   return (
