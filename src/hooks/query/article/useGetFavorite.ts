@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 export const useFavoritePosts = () => {
   const response = useQuery({
     queryKey: ["favoritePosts"],
-    queryFn: () => getFavoritePosts(),
+    queryFn: async () => await getFavoritePosts(),
     enabled: !!Cookies.get("accessToken"),
   });
   return {

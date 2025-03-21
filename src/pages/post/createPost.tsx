@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePost } from "../../hooks/usePost";
+import { useNavigate } from "react-router-dom";
 
 function CreatePostPage() {
   const [title, setTitle] = useState("");
   const [description, setDiscription] = useState("");
   const [body, setBody] = useState("");
   const [tags, setTags] = useState("");
-  const { createArticle } = usePost();
+  const { createArticle, me } = usePost();
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -24,6 +26,11 @@ function CreatePostPage() {
       console.log("fail");
     }
   };
+  useEffect(() => {
+    if (!me) {
+      navigate("/");
+    }
+  }, [me]);
 
   return (
     <div className="editor-page">

@@ -1,22 +1,13 @@
 import ArticlePreview from "../components/article/article-preview";
 import Pagination from "../components/pagination";
-import TagHolder from "../components/tags/tag-holder";
 import TagList from "../components/tags/tag-list";
 import Toggle from "../components/toogle";
 import { usePost } from "../hooks/usePost";
 import { Article } from "../types";
 
 function HomePage() {
-  const {
-    posts,
-    isLoading,
-    tags,
-    currentTag,
-    handleAddTags,
-    handleToggle,
-    currentFavorite,
-    handleAddFavorite,
-  } = usePost();
+  const { posts, isLoading, tags, currentTag, handleAddTags, handleToggle } =
+    usePost();
 
   return (
     <div className="home-page">
@@ -38,7 +29,7 @@ function HomePage() {
                 </div>
                 {posts.length > 0 ? (
                   posts?.map((post: Article) => (
-                    <ArticlePreview key={post.slug} article={post} />
+                    <ArticlePreview key={post.id} article={post} />
                   ))
                 ) : (
                   <span>No articles are here... yet.</span>

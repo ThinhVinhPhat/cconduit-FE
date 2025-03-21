@@ -1,7 +1,15 @@
+import { useEffect } from "react";
 import { usePost } from "../../hooks/usePost";
+import { useNavigate } from "react-router-dom";
 function SettingPage() {
-  const { me } = usePost();
-  const { handleLogout } = usePost();
+  const { me, handleLogout } = usePost();
+  const navigate = useNavigate(); 
+
+  useEffect(() => {
+    if (!me) {
+      navigate("/");
+    }
+  }, [me]);
 
   return (
     <div className="settings-page">

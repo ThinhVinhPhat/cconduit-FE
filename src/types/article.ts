@@ -1,3 +1,5 @@
+import { Tag } from "./tags";
+
 export interface Article {
   id: string;
   title: string;
@@ -11,6 +13,5 @@ export interface Article {
   };
   createdAt: string;
   totalLike: number;
-  tagList: string[];
+  tagList: Tag[];
 }
-

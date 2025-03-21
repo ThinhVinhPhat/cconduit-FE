@@ -1,15 +1,13 @@
-import { useMutation } from "@tanstack/react-query"
-import { createPost } from "../../apis/post/createPost"
+import { useMutation } from "@tanstack/react-query";
+import { addFavorite } from "../../apis/post/addFavorite";
 
 export const useAddFavorite = () => {
-  
   const response = useMutation({
-    mutationFn: (articleId: string) => createPost(articleId)
-  })
+    mutationFn: (articleId: string) => addFavorite(articleId),
+  });
 
   return {
     ...response,
-    data: response.data || null
-  }
-
-}
+    data: response.data || null,
+  };
+};

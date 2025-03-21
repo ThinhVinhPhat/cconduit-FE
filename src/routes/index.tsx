@@ -6,6 +6,7 @@ import CreatePostPage from "../pages/post/createPost";
 import ProfilePage from "../pages/user/Profile";
 import SettingPage from "../pages/user/Setting";
 import RegisterPage from "../pages/auth/Register";
+import PostDetail from "../pages/post/PostDeatil";
 
 export const routes = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ export const routes = createBrowserRouter([
       {
         path: "/profile/:name",
         element: <ProfilePage />,
+      },
+      {
+        path: "/article/:slug",
+        element: <PostDetail />,
       },
     ],
   },

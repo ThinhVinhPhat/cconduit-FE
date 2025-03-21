@@ -1,7 +1,7 @@
 import { usePost } from "../hooks/usePost";
 
 function Pagination() {
-  const { page, totalPage, handleSetPage } = usePost();
+  const { totalPage, handleSetPage } = usePost();
   return (
     <ul className="pagination">
       {Array.from({ length: totalPage }, (_, index) => (
@@ -10,7 +10,7 @@ function Pagination() {
             className="page-link"
             onClick={() => handleSetPage(index + 1)}
           >
-            {page + 1}
+            {index + 1}
           </button>
         </li>
       ))}
