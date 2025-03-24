@@ -6,12 +6,15 @@ export interface Article {
   shortDescription: string;
   description: string;
   slug: string;
+  favorited: boolean;
   author: {
+    id: string;
     username: string;
     bio: string;
     image: string;
+    following: boolean;
   };
   createdAt: string;
-  totalLike: number;
+  favoritesCount: number;
   tagList: Tag[];
 }

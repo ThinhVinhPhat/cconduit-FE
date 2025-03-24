@@ -1,9 +1,8 @@
-import { Tag } from "../../types/tags";
 import sever from "../index";
 import Cookies from "js-cookie";
 
-export const getPosts = async () => {
-  const response = await sever.get("/articles");
+export const getPosts = async (id: string | undefined) => {
+  const response = await sever.get(`/articles?userId=${id}`);
   return response.data;
 };
 
@@ -30,7 +29,10 @@ export const getTagPost = async (tags: string[]) => {
   return response.data;
 };
 
-export const getPostDetail = async (slug: string | undefined) => {
-  const response = await sever.get(`/articles/${slug}`);
+export const getPostDetail = async (
+  slug: string | undefined,
+  id: string | undefined
+) => {
+  const response = await sever.get(`/articles/${slug}?userId=${id}`);
   return response.data;
 };

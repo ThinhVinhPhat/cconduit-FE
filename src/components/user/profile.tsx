@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { usePost } from "../../hooks/usePost";
 import ArticlePreview from "../article/article-preview";
 import Pagination from "../pagination";
@@ -8,6 +9,7 @@ type ProfileProps = {
 
 function Profile({ isUser }: ProfileProps) {
   const { favoritePost, me, toggle, posts } = usePost();
+  const navigate = useNavigate();
   return (
     <div className="profile-page">
       <div className="user-info">
@@ -21,15 +23,18 @@ function Profile({ isUser }: ProfileProps) {
                 kinda looks like Peeta from the Hunger Games
               </p>
 
-              {isUser ? (
-                <button className="btn btn-sm btn-outline-secondary action-btn">
-                  <i className="ion-plus-round" />
-                  &nbsp; Follow Eric Simons
+              {me ? (
+                <button
+                  onClick={() => navigate("/settings")}
+                  className="btn btn-sm btn-outline-secondary action-btn"
+                >
+                  <i className="ion-gear-a" />
+                  &nbsp; Edit Profile Settings
                 </button>
               ) : (
                 <button className="btn btn-sm btn-outline-secondary action-btn">
-                  <i className="ion-gear-a" />
-                  &nbsp; Edit Profile Settings
+                  <i className="ion-plus-round" />
+                  &nbsp; Follow Eric Simons
                 </button>
               )}
             </div>
@@ -39,12 +44,12 @@ function Profile({ isUser }: ProfileProps) {
       <div className="container">
         <div className="row">
           <div className="col-xs-12 col-md-10 offset-md-1">
-            <Toggle currentPage="personal" />
+            <Toggle currentPage="personal" currentTag={[]} />
 
             {toggle === "personal" ? (
               posts && posts.length > 0 ? (
                 <>
-                  {posts.map((article) => (
+                  {posts?.map((article) => (
                     <ArticlePreview key={article.id} article={article} />
                   ))}
                   <Pagination />
@@ -54,7 +59,7 @@ function Profile({ isUser }: ProfileProps) {
               )
             ) : favoritePost && favoritePost.length > 0 ? (
               <>
-                {favoritePost.map((article) => (
+                {favoritePost?.map((article) => (
                   <ArticlePreview key={article.id} article={article} />
                 ))}
                 <Pagination />

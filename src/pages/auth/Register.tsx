@@ -1,12 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePost } from "../../hooks/usePost";
 import ErrorMessage from "../../components/error";
+import { useNavigate } from "react-router-dom";
 
 function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { handleRegister } = usePost();
+  const { me, handleRegister } = usePost();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (me) {
+      navigate("/");
+    }
+  }, [me]);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleRegister(username, email, password);
+    setUsername("");
+    setEmail("");
+    setPassword("");
+  };
 
   return (
     <div className="auth-page">
@@ -18,12 +34,7 @@ function RegisterPage() {
               <a href="/login">Have an account?</a>
             </p>
             <ErrorMessage />
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleRegister(username, email, password);
-              }}
-            >
+            <form onSubmit={(e) => handleSubmit(e)}>
               <fieldset className="form-group">
                 <input
                   className="form-control form-control-lg"

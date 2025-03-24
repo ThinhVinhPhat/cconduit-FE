@@ -1,9 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
-import { addFavorite } from "../../apis/post/addFavorite";
+import { deletePost } from "../../../apis/post/deletePost";
 
-export const useAddFavorite = () => {
+export const useDeletePost = () => {
   const response = useMutation({
-    mutationFn: (articleId: string) => addFavorite(articleId),
+    mutationFn: (id: string) => deletePost(id),
   });
 
   return {

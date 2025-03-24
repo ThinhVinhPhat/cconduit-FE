@@ -19,7 +19,6 @@ export const useAuthContext = (): AuthContextType => {
   const [userLogin, setUserLogin] = useState(false);
   const [error, setError] = useState("");
   const { data: me } = useGetMe();
-  
 
   //login
   const handleLogin = async (email: string, password: string) => {
@@ -32,7 +31,7 @@ export const useAuthContext = (): AuthContextType => {
         });
       }
     } catch (error: any) {
-      if (error.response?.data.statusCode === 404) {
+      if (error.response?.data.statusCode === 400) {
         setError("Invalid email or password");
       }
     }
@@ -51,7 +50,7 @@ export const useAuthContext = (): AuthContextType => {
       });
     } catch (error: any) {
       if (error.response?.status === 400) {
-        setError("Email already exists");
+        setError("Username and Email must be unique");
       }
     }
   };
@@ -62,13 +61,13 @@ export const useAuthContext = (): AuthContextType => {
   };
 
   return {
+    userLogin,
+    error,
+    me,
     handleLogin,
     handleRegister,
     handleLogout,
-    userLogin,
     setUserLogin,
-    error,
     setError,
-    me,
   };
 };

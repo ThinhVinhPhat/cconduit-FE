@@ -1,6 +1,13 @@
+import { usePost } from "../../hooks/usePost";
 import { Comment } from "../../types/comment";
 
-function ArticleComment({ comment }: { comment: Comment }) {
+type ArticleCommentProps = {
+  comment: Comment;
+  onDeleteComment: (id: string) => void;
+};
+
+function ArticleComment({ comment, onDeleteComment }: ArticleCommentProps) {
+  const { me } = usePost();
   return (
     <div className="card">
       <div className="card-block">
@@ -21,6 +28,14 @@ function ArticleComment({ comment }: { comment: Comment }) {
           {comment.author.username}
         </a>
         <span className="date-posted">{comment.createdAt}</span>
+        {me?.name === comment.author.username && (
+          <span className="mod-options">
+            <i
+              className="ion-trash-a"
+              onClick={() => onDeleteComment(comment.id)}
+            ></i>
+          </span>
+        )}
       </div>
     </div>
   );

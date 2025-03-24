@@ -40,7 +40,7 @@ function Toggle({ currentPage, currentTag }: ToggleProps) {
           </li>
         )}
 
-        {currentTag.length > 0 &&
+        {currentTag?.length > 0 &&
           currentTag.map((tag) => (
             <li className="nav-item" key={tag.id}>
               <div style={{ display: "flex" }}>

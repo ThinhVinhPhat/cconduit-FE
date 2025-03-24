@@ -3,12 +3,12 @@ import { getFavoritePosts } from "../../../apis/post/getPosts";
 import Cookies from "js-cookie";
 export const useFavoritePosts = () => {
   const response = useQuery({
-    queryKey: ["favoritePosts"],
-    queryFn: async () => await getFavoritePosts(),
+    queryKey: ["favoritePosts", Cookies.get("accessToken")],
+    queryFn: () => getFavoritePosts(),
     enabled: !!Cookies.get("accessToken"),
   });
   return {
     ...response,
-    data: response.data?.articles || [],
+    data: response.data?.data || [],
   };
 };

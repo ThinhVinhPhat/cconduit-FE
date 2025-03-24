@@ -2,11 +2,11 @@ import Layout from "../components/layout";
 import HomePage from "../pages/Home";
 import LoginPage from "../pages/auth/Login";
 import { createBrowserRouter } from "react-router";
-import CreatePostPage from "../pages/post/createPost";
 import ProfilePage from "../pages/user/Profile";
 import SettingPage from "../pages/user/Setting";
 import RegisterPage from "../pages/auth/Register";
-import PostDetail from "../pages/post/PostDeatil";
+import PostDetail from "../pages/post/PostDetail";
+import PostFormPage from "../pages/post/PostForm";
 
 export const routes = createBrowserRouter([
   {
@@ -31,7 +31,11 @@ export const routes = createBrowserRouter([
       },
       {
         path: "/post/create",
-        element: <CreatePostPage />,
+        element: <PostFormPage />,
+      },
+      {
+        path: "/post/update/:slug",
+        element: <PostFormPage />,
       },
       {
         path: "/profile/:name",

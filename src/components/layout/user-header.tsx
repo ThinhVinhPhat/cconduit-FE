@@ -31,8 +31,8 @@ function UserHeader() {
             </NavLink>
           </li>
           <li className="nav-item">
-            <NavLink className="nav-link" to="/profile/eric-simons">
-              <img src={me?.image} className="user-pic" />
+            <NavLink className="nav-link" to={`/profile/${me?.name}`}>
+              <img src={me?.avatar} className="user-pic" />
               {me?.name}
             </NavLink>
           </li>

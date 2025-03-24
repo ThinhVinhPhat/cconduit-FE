@@ -4,11 +4,11 @@ import Footer from "./footer";
 import UserHeader from "./user-header";
 import { usePost } from "../../hooks/usePost";
 function Layout() {
-  const { login } = usePost();
+  const { me } = usePost();
 
   return (
     <>
-      {!login ? <Header /> : <UserHeader />}
+      {!me ? <Header /> : <UserHeader />}
       <Outlet />
       <Footer />
     </>

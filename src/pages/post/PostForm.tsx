@@ -1,31 +1,54 @@
 import { useEffect, useState } from "react";
 import { usePost } from "../../hooks/usePost";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { usePostDetail } from "../../hooks/query/article/usePostDetail";
 
-function CreatePostPage() {
+function PostFormPage() {
   const [title, setTitle] = useState("");
   const [description, setDiscription] = useState("");
   const [body, setBody] = useState("");
   const [tags, setTags] = useState("");
-  const { createArticle, me } = usePost();
+  const { createArticle, me, updateArticle } = usePost();
   const navigate = useNavigate();
+  const { slug } = useParams();
+  const { data: post } = usePostDetail(slug);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (slug) {
+      setTitle(post.title);
+      setDiscription(post.shortDescription);
+      setBody(post.description);
+      setTags(post.tagList.join(","));
+    }
+  }, [slug]);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = {
+      id: post.id,
       title,
       description,
       body,
       tags: tags.split(","),
     };
-    const result = createArticle(data);
-
-    if (result) {
-      console.log("success");
+    if (slug) {
+      const result = updateArticle(data);
+      try {
+        navigate(`/`);
+        e.currentTarget.reset();
+      } catch (error) {
+        console.log(error);
+      }
     } else {
-      console.log("fail");
+      const result = createArticle(data);
+      if (result) {
+        navigate(`/`);
+      } else {
+        console.log("fail");
+      }
     }
   };
+
   useEffect(() => {
     if (!me) {
       navigate("/");
@@ -102,4 +125,4 @@ function CreatePostPage() {
   );
 }
 
-export default CreatePostPage;
+export default PostFormPage;

@@ -1,11 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePost } from "../../hooks/usePost";
 import ErrorMessage from "../../components/error";
+import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { handleLogin} = usePost();
+  const { me, handleLogin } = usePost();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (me) {
+      navigate("/");
+    }
+  }, [me]);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleLogin(email, password);
+    setEmail("");
+    setPassword("");
+  };
+
   return (
     <div className="auth-page">
       <div className="container page">
@@ -15,13 +31,8 @@ function LoginPage() {
             <p className="text-xs-center">
               <a href="/register">Need an account?</a>
             </p>
-            <ErrorMessage /> 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleLogin(email, password);
-              }}
-            >
+            <ErrorMessage />
+            <form onSubmit={(e) => handleSubmit(e)}>
               <fieldset className="form-group">
                 <input
                   className="form-control form-control-lg"

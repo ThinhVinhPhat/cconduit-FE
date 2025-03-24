@@ -1,41 +1,45 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Article } from "../types";
 import { Tag } from "../types/tags";
-import { useCreatePost } from "../hooks/mutation/useCreatePost";
+import { useCreatePost } from "../hooks/mutation/post/useCreatePost";
 import { usePersonalPosts } from "../hooks/query/article/usePersonalPost";
 import { useGetPost } from "../hooks/query/article/usePosts";
 import { useGetTag } from "../hooks/query/tag/useGetTags";
-import { useAddFavorite } from "../hooks/mutation/useAddFavorite";
+import { useAddFavorite } from "../hooks/mutation/favorite/useAddFavorite";
 import useGetByTags from "../hooks/query/article/useGetByTag";
 import { useFavoritePosts } from "../hooks/query/article/useGetFavorite";
 import { useAuthContext } from "./auth-context";
+import { useUpdatePost } from "../hooks/mutation/post/useUpdatePost";
+import { useDeletePost } from "../hooks/mutation/post/useDeletePost";
 
 export type PostContextType = {
   posts: Article[] | undefined;
   favoritePost: Article[] | undefined;
   login: boolean;
   tags: Tag[];
-  isLogin: (login: boolean) => void;
   toggle: string;
-  handleToggle: (toggle: string) => void;
   data?: Article[] | undefined;
   isLoading: boolean | undefined;
   error: string;
   personalPostsLoading: boolean | undefined;
   page: number;
-  handleSetPage: (page: number) => void;
+  currentFavorite: string[];
   totalPage: number;
-  createArticle: (data: Article) => boolean;
   currentTag: Tag[];
+  isLogin: (login: boolean) => void;
+  handleToggle: (toggle: string) => void;
+  handleSetPage: (page: number) => void;
+  createArticle: (data: Article) => boolean;
   handleAddTags: (tag: Tag) => void;
   handleDeleteTags: (tag: Tag) => void;
   handleAddFavorite: (articleId: string) => void;
-  currentFavorite: string[];
   setCurrentFavorite: (favorite: string[]) => void;
   setCurrentTag: (tag: Tag[]) => void;
   setDataPost: (data: Article[]) => void;
   setToggle: (toggle: string) => void;
   setPage: (page: number) => void;
+  updateArticle: (data: Article) => Article | null;
+  deleteArticle: (id: string) => boolean;
 };
 
 export const PostContext = () => {
@@ -44,7 +48,8 @@ export const PostContext = () => {
   const [currentFavorite, setCurrentFavorite] = useState<string[]>([]);
   const [toggle, setToggle] = useState("personal");
   const { me } = useAuthContext();
-  const { data, isLoading } = useGetPost();
+
+  const { data, isLoading } = useGetPost(me?.id ?? "0");
   const { data: favoritePost } = useFavoritePosts();
   const { data: tagsPost } = useGetByTags(currentTag);
   const { data: tags } = useGetTag();
@@ -54,6 +59,17 @@ export const PostContext = () => {
   const [page, setPage] = useState(1);
   const { mutate: mutatePost } = useCreatePost();
   const limit = 10;
+  const { data: updatePost, mutate: mutateUpdatePost } = useUpdatePost();
+  const { mutate: mutateDeletePost } = useDeletePost();
+
+  useEffect(() => {
+    if (favoritePost) {
+      const favoriteId = favoritePost?.articles?.map(
+        (item: Article) => item.id
+      );
+      setCurrentFavorite(favoriteId);
+    }
+  }, [favoritePost?.articles, favoritePost]);
 
   //toggle post type
   const handleToggle = (toggle: string) => {
@@ -75,7 +91,34 @@ export const PostContext = () => {
       return true;
     } catch (error) {
       console.log("Failed creating article", error);
+      return false;
+    }
+  };
 
+  //update Article
+  const updateArticle = (data: Article) => {
+    try {
+      mutateUpdatePost(data);
+      return updatePost;
+    } catch (error) {
+      console.log("Failed updating article", error);
+      return null;
+    }
+  };
+  //delete Article
+  const deleteArticle = (id: string) => {
+    try {
+      mutateDeletePost(id);
+      if (toggle === "personal" && personalPosts) {
+        setDataPost(
+          personalPosts.articles.filter((item: Article) => item.id != id)
+        );
+      } else {
+        setDataPost(dataPost.filter((item: Article) => item.id != id));
+      }
+      return true;
+    } catch (error) {
+      console.log("Failed deleting article", error);
       return false;
     }
   };
@@ -110,7 +153,7 @@ export const PostContext = () => {
     toggle,
     posts: data,
     sortedPosts: dataInPage,
-    favoritePost: favoritePost,
+    favoritePost: favoritePost?.articles,
     tags: tags,
     personalPosts,
     totalPage,
@@ -126,11 +169,13 @@ export const PostContext = () => {
     handleToggle,
     handleSetPage,
     createArticle,
+    updateArticle,
     setCurrentFavorite,
     setCurrentTag,
     setDataPost,
     setToggle,
     setPage,
+    deleteArticle,
   };
 };
 

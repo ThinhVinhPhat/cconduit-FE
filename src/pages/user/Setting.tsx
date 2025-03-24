@@ -3,7 +3,7 @@ import { usePost } from "../../hooks/usePost";
 import { useNavigate } from "react-router-dom";
 function SettingPage() {
   const { me, handleLogout } = usePost();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!me) {
@@ -25,7 +25,7 @@ function SettingPage() {
                 <fieldset className="form-group">
                   <input
                     className="form-control"
-                    type="text"
+                    type="file"
                     placeholder="URL of profile picture"
                   />
                 </fieldset>
@@ -67,7 +67,10 @@ function SettingPage() {
             </form>
             <hr />
             <button
-              onClick={() => handleLogout()}
+              onClick={() => {
+                handleLogout();
+                navigate("/");
+              }}
               className="btn btn-outline-danger"
             >
               Or click here to logout.
