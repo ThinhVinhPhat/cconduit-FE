@@ -3,6 +3,7 @@ import { useCreateFollowing } from "../hooks/mutation/following/useCreateFollowi
 import { usePost } from "../hooks/usePost";
 import { Article, User } from "../types";
 import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
 type Props = {
   post: Article;
   me: User | null;
@@ -10,7 +11,12 @@ type Props = {
 
 function Button({ post, me }: Props) {
   const navigate = useNavigate();
-  const { handleAddFavorite, deleteArticle } = usePost();
+  const {
+    handleAddFavorite,
+    currentFavorite,
+    setCurrentFavorite,
+    deleteArticle,
+  } = usePost();
   const { mutate: handleFollow } = useCreateFollowing();
   const { mutate: handleUnfollow } = useDeleteFollowing();
 
@@ -29,6 +35,19 @@ function Button({ post, me }: Props) {
       handleUnfollow(id);
     } else {
       handleFollow(id);
+    }
+  };
+
+  const currentFavoriteRef = useRef(post.favoritesCount);
+
+  const handleFavorite = async (id: string) => {
+    await handleAddFavorite(id);
+    if (currentFavorite?.find((item) => item === id)) {
+      setCurrentFavorite(currentFavorite.filter((item) => item !== id));
+      currentFavoriteRef.current = currentFavoriteRef.current - 1;
+    } else {
+      setCurrentFavorite([...currentFavorite, id]);
+      currentFavoriteRef.current = currentFavoriteRef.current + 1;
     }
   };
 
@@ -52,14 +71,14 @@ function Button({ post, me }: Props) {
           &nbsp;
           <button
             className={`btn btn-sm btn-outline-primary ${
-              post?.favorited == true ? "active" : ""
+              currentFavorite?.find((item) => item === post.id) ? "active" : ""
             }`}
-            onClick={() => handleAddFavorite(post.id)}
+            onClick={() => handleFavorite(post.id)}
             style={{ cursor: "pointer", marginRight: "10px" }}
           >
             <i className="ion-heart"></i>
             &nbsp; Favorite Article{" "}
-            <span className="counter">({post?.favoritesCount})</span>
+            <span className="counter">({currentFavoriteRef.current})</span>
           </button>
         </>
       )}

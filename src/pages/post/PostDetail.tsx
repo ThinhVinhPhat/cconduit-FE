@@ -8,6 +8,7 @@ import { usePost } from "../../hooks/usePost";
 import Button from "../../components/Button";
 import { useCreateComment } from "../../hooks/mutation/comments/useCreateComment";
 import { useDeleteComment } from "../../hooks/mutation/comments/useDeleteComment";
+import { UserBarHolder } from "../../components/UserBarHolder";
 
 function PostDetail() {
   const [postComments, setPostComments] = useState<Comment[]>([]);
@@ -47,27 +48,14 @@ function PostDetail() {
           <div className="banner">
             <div className="container">
               <h1>{post?.title}</h1>
-              <div className="article-meta">
-                <a href="profile.html">
-                  <img src="http://i.imgur.com/Qr71crq.jpg" />
-                </a>
-                <div className="info">
-                  <a href="" className="author">
-                    {post?.author?.username}
-                  </a>
-                  <span className="date">
-                    {new Date(post?.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <Button post={post} me={me} />
-              </div>
+              <UserBarHolder post={post} me={me} />
             </div>
           </div>
 
           <div className="container page">
             <div className="row article-content">
               <div className="col-md-12">
-                <p>{post?.description}</p>
+                <p dangerouslySetInnerHTML={{ __html: post?.body }} />
                 <ul className="tag-list">
                   {post?.tagList?.map((tag: string) => (
                     <li className="tag-default tag-pill tag-outline">{tag}</li>
@@ -77,23 +65,6 @@ function PostDetail() {
             </div>
 
             <hr />
-
-            <div className="article-actions">
-              <div className="article-meta">
-                <a href="profile.html">
-                  <img src="http://i.imgur.com/Qr71crq.jpg" />
-                </a>
-                <div className="info">
-                  <a href="" className="author">
-                    {post?.author?.username}
-                  </a>
-                  <span className="date">
-                    {new Date(post?.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <Button post={post} me={me} />
-              </div>
-            </div>
 
             <div className="row">
               <div className="col-xs-12 col-md-8 offset-md-2">
@@ -111,7 +82,7 @@ function PostDetail() {
                       </div>
                       <div className="card-footer">
                         <img
-                          src="http://i.imgur.com/Qr71crq.jpg"
+                          src={post?.author?.image}
                           className="comment-author-img"
                         />
                         <button

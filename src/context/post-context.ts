@@ -11,6 +11,7 @@ import { useFavoritePosts } from "../hooks/query/article/useGetFavorite";
 import { useAuthContext } from "./auth-context";
 import { useUpdatePost } from "../hooks/mutation/post/useUpdatePost";
 import { useDeletePost } from "../hooks/mutation/post/useDeletePost";
+import { AxiosError } from "axios";
 
 export type PostContextType = {
   posts: Article[] | undefined;
@@ -46,7 +47,7 @@ export const PostContext = () => {
   const [dataPost, setDataPost] = useState<Article[]>([]);
   const [currentTag, setCurrentTag] = useState<Tag[]>([]);
   const [currentFavorite, setCurrentFavorite] = useState<string[]>([]);
-  const [toggle, setToggle] = useState("personal");
+  const [toggle, setToggle] = useState("global");
   const { me } = useAuthContext();
 
   const { data, isLoading } = useGetPost(me?.id ?? "0");
@@ -90,8 +91,10 @@ export const PostContext = () => {
       mutatePost(data);
       return true;
     } catch (error) {
-      console.log("Failed creating article", error);
-      return false;
+      if (error instanceof AxiosError && error.response?.status === 400) {
+        console.log(error.response?.data);
+        return false;
+      }
     }
   };
 
@@ -113,7 +116,7 @@ export const PostContext = () => {
         setDataPost(
           personalPosts.articles.filter((item: Article) => item.id != id)
         );
-      } else {
+      } else if (toggle === "global") {
         setDataPost(dataPost.filter((item: Article) => item.id != id));
       }
       return true;

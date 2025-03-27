@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { usePost } from "../../hooks/usePost";
 import { useNavigate, useParams } from "react-router-dom";
 import { usePostDetail } from "../../hooks/query/article/usePostDetail";
+import { Editor } from "@tinymce/tinymce-react";
 
 function PostFormPage() {
   const [title, setTitle] = useState("");
@@ -11,7 +12,7 @@ function PostFormPage() {
   const { createArticle, me, updateArticle } = usePost();
   const navigate = useNavigate();
   const { slug } = useParams();
-  const { data: post } = usePostDetail(slug);
+  const { data: post } = usePostDetail(slug, me?.id);
 
   useEffect(() => {
     if (slug) {
@@ -32,20 +33,18 @@ function PostFormPage() {
       tags: tags.split(","),
     };
     if (slug) {
-      const result = updateArticle(data);
+      updateArticle(data);
       try {
         navigate(`/`);
-        e.currentTarget.reset();
       } catch (error) {
         console.log(error);
       }
     } else {
-      const result = createArticle(data);
-      if (result) {
-        navigate(`/`);
-      } else {
-        console.log("fail");
-      }
+      createArticle(data);
+      setBody("");
+      setTitle("");
+      setDiscription("");
+      setTags("");
     }
   };
 
@@ -54,6 +53,11 @@ function PostFormPage() {
       navigate("/");
     }
   }, [me]);
+  console.log(body);
+
+  const handleEditorChange = (e: string) => {
+    setBody(e);
+  };
 
   return (
     <div className="editor-page">
@@ -84,13 +88,17 @@ function PostFormPage() {
                   />
                 </fieldset>
                 <fieldset className="form-group">
-                  <textarea
-                    className="form-control"
-                    rows={8}
+                  <Editor
                     value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    placeholder="Write your article (in markdown)"
-                    defaultValue={""}
+                    onEditorChange={handleEditorChange}
+                    apiKey="lccx10ru49zi7f696fkhycfyir5ul90gm7j471cdhdytzd2c"
+                    init={{
+                      height: 500,
+                      menubar: true,
+                      plugins: "lists link image table code",
+                      toolbar:
+                        "undo redo | formatselect | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | removeformat | help",
+                    }}
                   />
                 </fieldset>
                 <fieldset className="form-group">

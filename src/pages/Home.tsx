@@ -35,7 +35,9 @@ function HomePage() {
                   <span>No articles are here... yet.</span>
                 )}
 
-                <Pagination />
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <Pagination />
+                </div>
               </div>
               <div className="col-md-3">
                 <div className="sidebar">

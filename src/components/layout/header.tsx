@@ -11,6 +11,7 @@ function Header() {
         <ul className="nav navbar-nav pull-xs-right">
           <li className="nav-item">
             <NavLink className="nav-link" to="/">
+              <i className="ion-home" style={{ marginRight: "5px" }} />
               Home
             </NavLink>
           </li>

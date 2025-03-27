@@ -8,6 +8,7 @@ import { User } from "../types/user";
 import { Tag } from "../types/tags";
 
 type ContextType = {
+  imageAuth: any;
   me: User | null;
   posts: Article[] | undefined;
   favoritePost: Article[] | undefined;
@@ -78,6 +79,7 @@ export const ContextProvider = ({ children }: PropsWithChildren) => {
     handleLogout,
     userLogin,
     error,
+    imageAuth,
   } = useAuthContext();
 
   useEffect(() => {
@@ -87,8 +89,6 @@ export const ContextProvider = ({ children }: PropsWithChildren) => {
     }
   }, [setUserLogin]);
 
-
-
   useEffect(() => {
     if (currentTag && currentTag.length > 0) {
       setDataPost(() => tagsPost.articles);
@@ -96,6 +96,9 @@ export const ContextProvider = ({ children }: PropsWithChildren) => {
       if (toggle === "personal" && me) {
         setDataPost(personalPosts.articles);
       } else {
+        setDataPost([]);
+      }
+      if (toggle === "global") {
         setDataPost(posts.articles);
       }
     }
@@ -124,6 +127,7 @@ export const ContextProvider = ({ children }: PropsWithChildren) => {
       personalPostsLoading,
       currentTag,
       currentFavorite,
+      imageAuth,
       isLogin: setUserLogin,
       handleToggle,
       handleSetPage,
@@ -157,6 +161,7 @@ export const ContextProvider = ({ children }: PropsWithChildren) => {
     error,
     personalPostsLoading,
     currentTag,
+    imageAuth,
   ]);
 
   return <Context.Provider value={memoizedValue}>{children}</Context.Provider>;
