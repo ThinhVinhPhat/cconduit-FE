@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
-import { usePost } from "../../hooks/usePost";
 import ErrorMessage from "../../components/error";
 import { useNavigate } from "react-router-dom";
+import { useAuthAction } from "../../hooks/useAuthAction";
+import { useGetMe } from "../../hooks/query/user/useGetMe";
 
 function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { me, handleRegister } = usePost();
+  const { handleRegister } = useAuthAction();
+  const { data: me } = useGetMe();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (me) {
-      navigate("/");
+      navigate(-1);
     }
   }, [me]);
 

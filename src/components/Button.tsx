@@ -1,57 +1,55 @@
 import { useDeleteFollowing } from "../hooks/mutation/following/useDeleteFollowing";
 import { useCreateFollowing } from "../hooks/mutation/following/useCreateFollowing";
-import { usePost } from "../hooks/usePost";
+import { useArticleContext } from "../hooks/useArticleContext";
 import { Article, User } from "../types";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useArticleAction } from "../hooks/useArticleAction";
 type Props = {
   post: Article;
   me: User | null;
 };
 
 function Button({ post, me }: Props) {
+  const [isFollow, setIsFollow] = useState(false);
   const navigate = useNavigate();
-  const {
-    handleAddFavorite,
-    currentFavorite,
-    setCurrentFavorite,
-    deleteArticle,
-  } = usePost();
+  const { currentFavorite, setCurrentFavorite } = useArticleContext();
+  const { deleteArticle, handleFavorite } = useArticleAction();
   const { mutate: handleFollow } = useCreateFollowing();
   const { mutate: handleUnfollow } = useDeleteFollowing();
+  const currentFavoriteRef = useRef(post.favoritesCount);
+  useEffect(() => {
+    if (post?.author?.following === true) {
+      setIsFollow(true);
+    }
+  }, [post?.author?.following]);
 
   const handleEdit = (post: Article) => {
     navigate(`/post/update/${post.slug}`);
   };
+
   const handleDelete = (id: string) => {
-    const result = deleteArticle(id);
-    if (result) {
-      navigate("/");
+    const confirnmDelete = confirm(
+      "Are you sure you want to delete this article?"
+    );
+
+    if (confirnmDelete) {
+      const result = deleteArticle(id);
+      if (result) {
+        navigate("/");
+      }
     }
   };
 
   const handleFollowUnfollow = (id: string) => {
-    if (post?.author?.following) {
+    if (post?.author?.following === true) {
       handleUnfollow(id);
+      setIsFollow(false);
     } else {
       handleFollow(id);
+      setIsFollow(true);
     }
   };
-
-  const currentFavoriteRef = useRef(post.favoritesCount);
-
-  const handleFavorite = async (id: string) => {
-    await handleAddFavorite(id);
-    if (currentFavorite?.find((item) => item === id)) {
-      setCurrentFavorite(currentFavorite.filter((item) => item !== id));
-      currentFavoriteRef.current = currentFavoriteRef.current - 1;
-    } else {
-      setCurrentFavorite([...currentFavorite, id]);
-      currentFavoriteRef.current = currentFavoriteRef.current + 1;
-    }
-  };
-
-  console.log(post);
 
   return (
     <>
@@ -60,20 +58,21 @@ function Button({ post, me }: Props) {
           <button
             onClick={() => handleFollowUnfollow(post?.author?.id)}
             className={`btn btn-sm btn-outline-secondary ${
-              post?.author?.following == true ? "active" : ""
+              isFollow ? "active" : ""
             }`}
             style={{ marginRight: "10px" }}
           >
             <i className="ion-plus-round"></i>
-            {post?.author?.following ? "Unfollow" : "Follow"}{" "}
-            {post?.author?.username}
+            {isFollow ? "UnFollow" : "Follow"} {post?.author?.username}
           </button>
           &nbsp;
           <button
             className={`btn btn-sm btn-outline-primary ${
               currentFavorite?.find((item) => item === post.id) ? "active" : ""
             }`}
-            onClick={() => handleFavorite(post.id)}
+            onClick={() =>
+              handleFavorite(post.id, currentFavorite, currentFavoriteRef)
+            }
             style={{ cursor: "pointer", marginRight: "10px" }}
           >
             <i className="ion-heart"></i>

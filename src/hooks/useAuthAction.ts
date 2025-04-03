@@ -1,28 +1,22 @@
-import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useAuthContext } from "./useAuthContext";
 import { login, register } from "../apis/auth";
 import Cookies from "js-cookie";
-import { useGetMe } from "../hooks/query/user/useGetMe";
-import { User } from "../types/user";
-import { useGetImageAuth } from "../hooks/query/image-upload/getAuth";
 import { enqueueSnackbar } from "notistack";
+import { useGetImageAuth } from "./query/image-upload/getAuth";
 
-type AuthContextType = {
-  error: string;
-  userLogin: boolean;
-  me: User | null;
-  imageAuth: any;
-  handleLogin: (email: string, password: string) => void;
-  handleRegister: (username: string, email: string, password: string) => void;
-  handleLogout: () => void;
-  setUserLogin: (userLogin: boolean) => void;
-  setError: (error: string) => void;
-};
-
-export const useAuthContext = (): AuthContextType => {
-  const [userLogin, setUserLogin] = useState(false);
-  const [error, setError] = useState("");
-  const { data: me } = useGetMe();
+export const useAuthAction = () => {
+  const { setUserLogin, setError } = useAuthContext();
   const { data: imageAuth } = useGetImageAuth();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const accessToken = Cookies.get("accessToken");
+    if (accessToken) {
+      setUserLogin(true);
+    }
+  }, [setUserLogin]);
 
   //login
   const handleLogin = async (email: string, password: string) => {
@@ -70,24 +64,21 @@ export const useAuthContext = (): AuthContextType => {
       }
     }
   };
+
   //logout
   const handleLogout = () => {
     Cookies.remove("accessToken");
     setUserLogin(false);
+    queryClient.clear();
     enqueueSnackbar("Logout successfully", {
       variant: "success",
     });
   };
 
   return {
-    userLogin,
-    error,
-    me,
     imageAuth,
     handleLogin,
     handleRegister,
     handleLogout,
-    setUserLogin,
-    setError,
   };
 };

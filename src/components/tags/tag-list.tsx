@@ -2,13 +2,13 @@ import { Tag } from "../../types/tags";
 
 type TagListProps = {
   tags: Tag[];
-  onAddTags: (tag: Tag) => void;
+  onaddTags: (tag: Tag) => void;
   onHandleToggle: (toggle: string) => void;
 };
 
-function TagList({ tags, onAddTags, onHandleToggle }: TagListProps) {
+function TagList({ tags, onaddTags, onHandleToggle }: TagListProps) {
   const handleClickTags = (tag: Tag) => {
-    onAddTags(tag);
+    onaddTags(tag);
     onHandleToggle("tags");
   };
 

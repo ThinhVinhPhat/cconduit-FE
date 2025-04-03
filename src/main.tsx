@@ -3,17 +3,20 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import { RouterProvider } from "react-router-dom";
 import { routes } from "./routes";
-import { ContextProvider } from "./context/context-provider";
+
 import QueryProvider from "./providers/queryProvider";
 import { SnackbarProvider } from "notistack";
-
+import { ArticleContextProvider } from "./context/post-context";
+import { AuthContextProvider } from "./context/auth-context";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryProvider>
       <SnackbarProvider maxSnack={3}>
-        <ContextProvider>
-          <RouterProvider router={routes} />
-        </ContextProvider>
+        <AuthContextProvider>
+          <ArticleContextProvider>
+            <RouterProvider router={routes} />
+          </ArticleContextProvider>
+        </AuthContextProvider>
       </SnackbarProvider>
     </QueryProvider>
   </StrictMode>

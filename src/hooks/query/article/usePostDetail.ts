@@ -2,7 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getPostDetail } from "../../../apis/post/getPosts";
 
-export const usePostDetail = (slug: string | undefined, id: string | undefined) => {
+export const useArticleDetail = (
+  slug: string | undefined,
+  id: string | undefined
+) => {
   const response = useQuery({
     queryKey: ["post", slug],
     queryFn: async () => getPostDetail(slug, id),

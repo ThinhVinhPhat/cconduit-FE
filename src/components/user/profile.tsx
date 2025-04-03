@@ -1,12 +1,18 @@
 import { useNavigate } from "react-router-dom";
-import { usePost } from "../../hooks/usePost";
+import { useArticleContext } from "../../hooks/useArticleContext";
 import ArticlePreview from "../article/article-preview";
 import Pagination from "../pagination";
 import Toggle from "../toogle";
 import { useEffect } from "react";
+import { useGetMe } from "../../hooks/query/user/useGetMe";
+import { useArticleAction } from "../../hooks/useArticleAction";
+import { Article } from "../../types";
 
 function Profile() {
-  const { favoritePost, me, toggle, posts, setToggle } = usePost();
+  const { setToggle, toggle, dataPost, currentTag } = useArticleContext();
+  const { data: me } = useGetMe();
+  const { favoritePost } = useArticleAction();
+
   const navigate = useNavigate();
   useEffect(() => {
     if (me) {
@@ -26,7 +32,10 @@ function Profile() {
                 style={{ width: "150px", height: "150px", objectFit: "cover" }}
               />
               <h4>{me?.name}</h4>
-              <p style={{ color: "white" }}>{me?.description}</p>
+              <p
+                style={{ color: "white" }}
+                dangerouslySetInnerHTML={{ __html: me?.description }}
+              ></p>
 
               {me ? (
                 <button
@@ -54,22 +63,22 @@ function Profile() {
       <div className="container">
         <div className="row">
           <div className="col-xs-12 col-md-10 offset-md-1">
-            <Toggle currentPage="personal" currentTag={[]} />
+            <Toggle currentPage="personal" currentTag={currentTag} />
 
             {toggle === "personal" ? (
-              posts && posts.length > 0 ? (
+              dataPost && dataPost?.length > 0 ? (
                 <>
-                  {posts?.map((article) => (
+                  {dataPost?.map((article) => (
                     <ArticlePreview key={article.id} article={article} />
                   ))}
-                  {posts?.length > 10 && <Pagination />}
+                  <Pagination />
                 </>
               ) : (
                 <span>No articles are here... yet.</span>
               )
-            ) : favoritePost && favoritePost.length > 0 ? (
+            ) : favoritePost?.articles && favoritePost?.articles?.length > 0 ? (
               <>
-                {favoritePost?.map((article) => (
+                {favoritePost?.articles?.map((article: Article) => (
                   <ArticlePreview key={article.id} article={article} />
                 ))}
                 <Pagination />

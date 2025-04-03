@@ -9,7 +9,7 @@ function useGetByTags(tags: Tag[]) {
   })
   return {
     ...response,
-    data: response?.data?.data || []
+    data: response?.data?.data.articles || []
   }
 }
 

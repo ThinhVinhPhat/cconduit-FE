@@ -1,15 +1,14 @@
-import { NavLink } from "react-router";
-import { usePost } from "../../hooks/usePost";
-
+import { Link, NavLink } from "react-router";
+import { useGetMe } from "../../hooks/query/user/useGetMe";
 function UserHeader() {
-  const { me } = usePost();
+  const { data: me } = useGetMe();
 
   return (
     <nav className="navbar navbar-light">
       <div className="container">
-        <a className="navbar-brand" href="/">
+        <Link className="navbar-brand" to="/">
           conduit
-        </a>
+        </Link>
         <ul className="nav navbar-nav pull-xs-right">
           <li className="nav-item">
             <NavLink className="nav-link" to="/">

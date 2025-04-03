@@ -1,23 +1,27 @@
 import { Link, useParams } from "react-router";
-import { usePostDetail } from "../../hooks/query/article/usePostDetail";
 import { useGetComment } from "../../hooks/query/comment/useGetComment";
 import ArticleComment from "../../components/article/article-comment";
 import { Comment } from "../../types/comment";
 import { useEffect, useState } from "react";
-import { usePost } from "../../hooks/usePost";
-import Button from "../../components/Button";
 import { useCreateComment } from "../../hooks/mutation/comments/useCreateComment";
 import { useDeleteComment } from "../../hooks/mutation/comments/useDeleteComment";
 import { UserBarHolder } from "../../components/UserBarHolder";
+import { useArticleDetail } from "../../hooks/query/article/usePostDetail";
+import { useGetMe } from "../../hooks/query/user/useGetMe";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
 function PostDetail() {
   const [postComments, setPostComments] = useState<Comment[]>([]);
-  const { mutate: createComment } = useCreateComment();
+  const {
+    data: comment,
+    mutate: createComment,
+    isPending: isLoadingCreateComment,
+  } = useCreateComment();
   const { mutate: deleteComment } = useDeleteComment();
   const [commentText, setCommentText] = useState("");
   const { slug } = useParams();
-  const { me } = usePost();
-  const { data: post, isLoading } = usePostDetail(slug, me?.id ?? "0");
+  const { data: me } = useGetMe();
+  const { data: post, isLoading } = useArticleDetail(slug, me?.id);
   const { data: comments, isLoading: isLoadingComments } = useGetComment(
     post?.id
   );
@@ -30,19 +34,24 @@ function PostDetail() {
     }
   }, [comments]);
 
-  const handleSubmitComment = () => {
+  const handleSubmitComment = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     createComment({ id: post?.id, comment: commentText });
+    setCommentText("");
+    setPostComments((prev) => [...prev, comment]);
   };
 
   const handleDeleteComment = (id: string) => {
-    deleteComment(id);
-    setPostComments(postComments.filter((comment) => comment.id !== id));
+    if (id) {
+      deleteComment(id);
+      setPostComments(postComments.filter((comment) => comment.id !== id));
+    }
   };
 
   return (
     <>
       {isLoading ? (
-        <div>Loading...</div>
+        <LoadingSpinner />
       ) : (
         <div className="article-page">
           <div className="banner">
@@ -70,7 +79,10 @@ function PostDetail() {
               <div className="col-xs-12 col-md-8 offset-md-2">
                 {me ? (
                   <>
-                    <form className="card comment-form">
+                    <form
+                      onSubmit={(e) => handleSubmitComment(e)}
+                      className="card comment-form"
+                    >
                       <div className="card-block">
                         <textarea
                           className="form-control"
@@ -87,7 +99,7 @@ function PostDetail() {
                         />
                         <button
                           className="btn btn-sm btn-primary"
-                          onClick={handleSubmitComment}
+                          type="submit"
                         >
                           Post Comment
                         </button>
@@ -114,12 +126,12 @@ function PostDetail() {
                     </p>
                   </div>
                 )}
-                {isLoadingComments || !post?.id ? (
-                  <div>Loading...</div>
+                {isLoadingComments || isLoadingCreateComment || !post?.id ? (
+                  <LoadingSpinner />
                 ) : (
                   postComments.map((comment: Comment) => (
                     <ArticleComment
-                      key={comment.id}
+                      key={comment?.id}
                       comment={comment}
                       onDeleteComment={handleDeleteComment}
                     />

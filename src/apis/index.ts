@@ -3,11 +3,11 @@ import Cookies from "js-cookie";
 const baseUrl = "http://localhost:3100/api/v1";
 
 const server = axios.create({
-    baseURL: baseUrl,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  baseURL: baseUrl,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 server.interceptors.request.use(
   (config) => {

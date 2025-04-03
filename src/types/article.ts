@@ -18,3 +18,8 @@ export interface Article {
   favoritesCount: number;
   tagList: Tag[];
 }
+
+export interface ArticleResponse {
+  articles: Article[];
+  articleCount: number;
+}

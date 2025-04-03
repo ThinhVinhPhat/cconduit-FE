@@ -2,13 +2,12 @@ import { Outlet } from "react-router";
 import Header from "./header";
 import Footer from "./footer";
 import UserHeader from "./user-header";
-import { usePost } from "../../hooks/usePost";
+import { useAuthContext } from "../../hooks/useAuthContext";
 function Layout() {
-  const { me } = usePost();
-
+  const { userLogin } = useAuthContext();
   return (
     <>
-      {!me ? <Header /> : <UserHeader />}
+      {userLogin == false ? <Header /> : <UserHeader />}
       <Outlet />
       <Footer />
     </>

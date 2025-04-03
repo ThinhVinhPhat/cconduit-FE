@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { getFavoritePosts } from "../../../apis/post/getPosts";
+import { getFollowers } from "../../../apis/following/get-follower";
 import Cookies from "js-cookie";
-export const useFavoritePosts = (offset: number, limit: number) => {
+export const useGetFollower = () => {
   const response = useQuery({
-    queryKey: ["favoritePosts", offset + limit],
-    queryFn: () => getFavoritePosts(offset, limit),
+    queryKey: ["get-follower"],
+    queryFn: () => getFollowers(),
     enabled: !!Cookies.get("accessToken"),
   });
   return {

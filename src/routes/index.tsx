@@ -7,6 +7,7 @@ import SettingPage from "../pages/user/Setting";
 import RegisterPage from "../pages/auth/Register";
 import PostDetail from "../pages/post/PostDetail";
 import PostFormPage from "../pages/post/PostForm";
+import PublicRoute from "../pages/auth/PublicRoute";
 
 export const routes = createBrowserRouter([
   {
@@ -15,11 +16,11 @@ export const routes = createBrowserRouter([
     children: [
       {
         path: "/login",
-        element: <LoginPage />,
+        element: <PublicRoute><LoginPage /></PublicRoute>,
       },
       {
         path: "/register",
-        element: <RegisterPage />,
+        element: <PublicRoute><RegisterPage /></PublicRoute>,
       },
       {
         path: "/",

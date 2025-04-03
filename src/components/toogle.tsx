@@ -1,4 +1,5 @@
-import { usePost } from "../hooks/usePost";
+import { useArticleContext } from "../hooks/useArticleContext";
+import { useTagAction } from "../hooks/useTagAction";
 import { Tag } from "../types/tags";
 
 type ToggleProps = {
@@ -7,15 +8,15 @@ type ToggleProps = {
 };
 
 function Toggle({ currentPage, currentTag }: ToggleProps) {
-  const { toggle, handleToggle, handleDeleteTags } = usePost();
-
+  const { toggle, setToggle } = useArticleContext();
+  const { deleteTags } = useTagAction();
   return (
     <div className="feed-toggle">
       <ul className="nav nav-pills outline-active">
         <li className="nav-item">
           <a
             className={`nav-link ${toggle == "personal" && "active"}`}
-            onClick={() => handleToggle("personal")}
+            onClick={() => setToggle("personal")}
           >
             Your Feed
           </a>
@@ -24,7 +25,7 @@ function Toggle({ currentPage, currentTag }: ToggleProps) {
           <li className="nav-item">
             <a
               className={`nav-link ${toggle === "global" && "active"}`}
-              onClick={() => handleToggle("global")}
+              onClick={() => setToggle("global")}
             >
               Global Feed
             </a>
@@ -33,7 +34,7 @@ function Toggle({ currentPage, currentTag }: ToggleProps) {
           <li className="nav-item">
             <a
               className={`nav-link ${toggle === "favorite" && "active"}`}
-              onClick={() => handleToggle("favorite")}
+              onClick={() => setToggle("favorite")}
             >
               Favorite Articles
             </a>
@@ -46,13 +47,13 @@ function Toggle({ currentPage, currentTag }: ToggleProps) {
               <div style={{ display: "flex" }}>
                 <a
                   className={`nav-link ${toggle === "tags" && "active"}`}
-                  onClick={() => handleToggle(tag.title)}
+                  onClick={() => setToggle(tag.title)}
                 >
                   #{tag.title}
                 </a>
                 <button
                   className="nav-link"
-                  onClick={() => handleDeleteTags(tag)}
+                  onClick={() => deleteTags(tag)}
                   style={{ marginLeft: "-26px" }}
                 >
                   X

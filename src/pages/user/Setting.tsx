@@ -1,16 +1,34 @@
 import { useEffect, useState } from "react";
-import { usePost } from "../../hooks/usePost";
 import { useNavigate } from "react-router-dom";
-import { updateUser } from "../../apis/auth";
 import ImageKit from "imagekit";
 import { Editor } from "@tinymce/tinymce-react";
-function SettingPage() {
-  const { me, handleLogout, imageAuth } = usePost();
-  const [image, setImage] = useState<File | null>(null);
-  const [name, setName] = useState<string>(me?.name || "");
-  const [description, setDescription] = useState<string>(me?.description || "");
-  const navigate = useNavigate();
+import { useGetMe } from "../../hooks/query/user/useGetMe";
+import { useAuthAction } from "../../hooks/useAuthAction";
+import { SubmitHandler, useForm } from "react-hook-form";
+import UserAvatar from "../../components/UserAvatar";
+import clsx from "clsx";
+import { enqueueSnackbar } from "notistack";
+import { IFormInput, User } from "../../types/user";
+import { useUpdateUser } from "../../hooks/mutation/user/useUpdateUser";
+import LoadingSpinner from "../../components/ui/LoadingSpinner";
 
+function SettingPage() {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { data: me } = useGetMe();
+  const { register, handleSubmit, setValue, getValues } = useForm<IFormInput>({
+    defaultValues: {
+      name: me?.name,
+      description: me?.description,
+      avatar: me?.avatar,
+    },
+  });
+  const { handleLogout, imageAuth } = useAuthAction();
+  const navigate = useNavigate();
+  const {
+    data: updateData,
+    mutate: updateUser,
+    isPending: isUpdating,
+  } = useUpdateUser();
   const imageKit = new ImageKit({
     publicKey: "public_EDgp88ndVCN1OaMZMgMXhJwh6yA=",
     urlEndpoint: "https://ik.imagekit.io/qinoqbrbp",
@@ -21,29 +39,46 @@ function SettingPage() {
     if (!me) {
       navigate("/");
     }
+    setCurrentUser(me);
   }, [me]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit: SubmitHandler<IFormInput> = async (data) => {
+    if (
+      getValues("avatar") === me?.avatar &&
+      getValues("name") === me?.name &&
+      getValues("description") === me?.description
+    ) {
+      enqueueSnackbar("No changes to update", { variant: "info" });
+    }
 
-    const upload = await imageKit.upload({
-      file: image,
-      fileName: image?.name || "",
-      token: imageAuth?.data?.token || "",
-      signature: imageAuth?.data?.signature || "",
-      expire: imageAuth?.data?.expire || "",
-      publicKey: imageAuth?.data?.publicKey || "",
-    });
-    console.log(upload);
+    const upload =
+      data.avatar && typeof data.avatar !== "string"
+        ? await imageKit.upload({
+            file: data.avatar[0],
+            fileName: data.name || "",
+            token: imageAuth?.data?.token || "",
+            signature: imageAuth?.data?.signature || "",
+            expire: imageAuth?.data?.expire || "",
+            publicKey: imageAuth?.data?.publicKey || "",
+          })
+        : null;
 
     await updateUser({
-      avatar: upload?.url || "",
-      name,
-      description,
+      avatar: upload?.url || data.avatar,
+      name: data.name,
+      description: data.description,
     });
+
+    setCurrentUser(me || null);
+
+    setValue("avatar", "");
+    setValue("name", "");
+    setValue("description", "");
   };
 
-  return (
+  return isUpdating ? (
+    <LoadingSpinner />
+  ) : (
     <div className="settings-page">
       <div className="container page">
         <div className="row">
@@ -52,29 +87,34 @@ function SettingPage() {
             {/* <ul className="error-messages">
               <li>That name is required</li>
             </ul> */}
-            <form onSubmit={(e) => handleSubmit(e)}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <fieldset>
                 <fieldset className="form-group">
                   <input
                     className="form-control"
                     type="file"
                     placeholder="URL of profile picture"
-                    onChange={(e) => setImage(e.target.files?.[0])}
+                    {...register("avatar")}
                   />
                 </fieldset>
+                <UserAvatar
+                  image={getValues("avatar") || currentUser?.avatar}
+                  size="sm"
+                  username={getValues("name") || currentUser?.name}
+                />
                 <fieldset className="form-group">
                   <input
                     className="form-control form-control-lg"
                     type="text"
                     placeholder="Your Name"
-                    defaultValue={me?.name}
-                    onChange={(e) => setName(e.target.value)}
+                    defaultValue={currentUser?.name}
+                    {...register("name")}
                   />
                 </fieldset>
                 <fieldset className="form-group">
                   <Editor
-                    value={description}
-                    onEditorChange={(e) => setDescription(e)}
+                    initialValue={currentUser?.description}
+                    {...register("description")}
                     apiKey="lccx10ru49zi7f696fkhycfyir5ul90gm7j471cdhdytzd2c"
                     init={{
                       height: 500,
@@ -90,7 +130,7 @@ function SettingPage() {
                     className="form-control form-control-lg"
                     type="text"
                     placeholder="Email"
-                    defaultValue={me?.email}
+                    defaultValue={currentUser?.email}
                     disabled
                   />
                 </fieldset>
@@ -101,7 +141,9 @@ function SettingPage() {
                     placeholder="New Password"
                   />
                 </fieldset> */}
-                <button className="btn btn-lg btn-primary pull-xs-right">
+                <button
+                  className={clsx("btn btn-lg btn-primary pull-xs-right", {})}
+                >
                   Update Settings
                 </button>
               </fieldset>

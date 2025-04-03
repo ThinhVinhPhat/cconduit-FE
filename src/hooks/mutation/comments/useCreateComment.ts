@@ -18,6 +18,6 @@ export const useCreateComment = () => {
   });
   return {
     ...response,
-    data: response.data?.comment || null,
+    data: response.data?.data?.comment || null,
   };
 };

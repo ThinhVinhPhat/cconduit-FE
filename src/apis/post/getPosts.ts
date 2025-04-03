@@ -1,18 +1,32 @@
 import sever from "../index";
 import Cookies from "js-cookie";
 
-export const getPosts = async (id: string | undefined) => {
-  const response = await sever.get(`/articles?userId=${id}`);
+export const getPosts = async (
+  id: string | undefined,
+  skip: number,
+  limit: number
+) => {
+  const response = await sever.get(
+    `/articles?userId=${id}&offset=${skip}&limit=${limit}`
+  );
   return response.data;
 };
 
-export const getPersonalPost = async (name: string) => {
-  const response = await sever.get(`/articles?author=${name}`, {});
+export const getPersonalPost = async (
+  name: string,
+  followers: string[],
+  offset: number,
+  limit: number
+) => {
+  const response = await sever.get(
+    `/articles?author=${name}&followers=${followers}&offset=${offset}&limit=${limit}`,
+    {}
+  );
   return response.data;
 };
 
-export const getFavoritePosts = async () => {
-  const response = await sever.get(`/articles/favorite`, {
+export const getFavoritePosts = async (offset: number, limit: number) => {
+  const response = await sever.get(`/articles/favorite?offset=${offset}&limit=${limit}`, {
     headers: {
       Authorization: `Bearer ${Cookies.get("accessToken")}`,
     },

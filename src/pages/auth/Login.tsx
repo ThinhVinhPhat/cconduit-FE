@@ -1,19 +1,11 @@
-import { useEffect, useState } from "react";
-import { usePost } from "../../hooks/usePost";
+import { useState } from "react";
 import ErrorMessage from "../../components/error";
-import { useNavigate } from "react-router-dom";
+import { useAuthAction } from "../../hooks/useAuthAction";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { me, handleLogin } = usePost();
-  const navigate = useNavigate();
-  
-  useEffect(() => {
-    if (me) {
-      navigate("/");
-    }
-  }, [me]);
+  const { handleLogin } = useAuthAction();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -51,7 +43,10 @@ function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </fieldset>
-              <button className="btn btn-lg btn-primary pull-xs-right">
+              <button
+                type="submit"
+                className="btn btn-lg btn-primary pull-xs-right"
+              >
                 Sign in
               </button>
             </form>

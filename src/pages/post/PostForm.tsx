@@ -1,50 +1,54 @@
 import { useEffect, useState } from "react";
-import { usePost } from "../../hooks/usePost";
 import { useNavigate, useParams } from "react-router-dom";
-import { usePostDetail } from "../../hooks/query/article/usePostDetail";
 import { Editor } from "@tinymce/tinymce-react";
+import { useGetMe } from "../../hooks/query/user/useGetMe";
+import { useArticleAction } from "../../hooks/useArticleAction";
+import { useArticleDetail } from "../../hooks/query/article/usePostDetail";
+import { useForm } from "react-hook-form";
 
+interface IFormInput {
+  id: string;
+  title: string;
+  shortDescription: string;
+  tags: string;
+}
 function PostFormPage() {
-  const [title, setTitle] = useState("");
-  const [description, setDiscription] = useState("");
-  const [body, setBody] = useState("");
-  const [tags, setTags] = useState("");
-  const { createArticle, me, updateArticle } = usePost();
-  const navigate = useNavigate();
+  const { data: me } = useGetMe();
   const { slug } = useParams();
-  const { data: post } = usePostDetail(slug, me?.id);
+  const { data: post } = useArticleDetail(slug, me?.id);
+  const { createArticle, updateArticle } = useArticleAction();
+  const [description, setDescription] = useState(slug ? post.description : "");
+  const navigate = useNavigate();
+  const { register, handleSubmit, setValue } = useForm<IFormInput>({
+    defaultValues: {
+      id: slug ? post.id : "",
+      title: slug ? post.title : "",
+      shortDescription: slug ? post.shortDescription : "",
+      tags: slug ? post.tagList.join(",") : "",
+    },
+  });
 
-  useEffect(() => {
-    if (slug) {
-      setTitle(post.title);
-      setDiscription(post.shortDescription);
-      setBody(post.description);
-      setTags(post.tagList.join(","));
-    }
-  }, [slug]);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const data = {
-      id: post.id,
-      title,
-      description,
-      body,
-      tags: tags.split(","),
+  const onSubmit = (data: IFormInput) => {
+    const completeData = {
+      ...data,
+      description: description,
+      tags: data.tags.split(","),
     };
     if (slug) {
-      updateArticle(data);
+      updateArticle(completeData);
       try {
-        navigate(`/`);
+        navigate(-1);
       } catch (error) {
         console.log(error);
       }
     } else {
-      createArticle(data);
-      setBody("");
-      setTitle("");
-      setDiscription("");
-      setTags("");
+      const result = createArticle(completeData);
+      if (result) {
+        setValue("title", "");
+        setValue("shortDescription", "");
+        setValue("tags", "");
+        setDescription("");
+      }
     }
   };
 
@@ -53,11 +57,6 @@ function PostFormPage() {
       navigate("/");
     }
   }, [me]);
-  console.log(body);
-
-  const handleEditorChange = (e: string) => {
-    setBody(e);
-  };
 
   return (
     <div className="editor-page">
@@ -67,13 +66,13 @@ function PostFormPage() {
             {/* <ul className="error-messages">
               <li>That title is required</li>
             </ul> */}
-            <form onSubmit={(e) => handleSubmit(e)}>
+            <form onSubmit={handleSubmit(onSubmit)}>
               <fieldset>
                 <fieldset className="form-group">
                   <input
                     type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    defaultValue={slug ? post.title : ""}
+                    {...register("title")}
                     className="form-control form-control-lg"
                     placeholder="Article Title"
                   />
@@ -81,16 +80,16 @@ function PostFormPage() {
                 <fieldset className="form-group">
                   <input
                     type="text"
-                    value={description}
-                    onChange={(e) => setDiscription(e.target.value)}
+                    defaultValue={slug ? post.shortDescription : ""}
+                    {...register("shortDescription")}
                     className="form-control"
                     placeholder="What's this article about?"
                   />
                 </fieldset>
                 <fieldset className="form-group">
                   <Editor
-                    value={body}
-                    onEditorChange={handleEditorChange}
+                    onChange={(e) => setDescription(e.target.getContent())}
+                    initialValue={description}
                     apiKey="lccx10ru49zi7f696fkhycfyir5ul90gm7j471cdhdytzd2c"
                     init={{
                       height: 500,
@@ -105,22 +104,32 @@ function PostFormPage() {
                   <input
                     type="text"
                     className="form-control"
-                    value={tags}
-                    onChange={(e) => setTags(e.target.value)}
+                    {...register("tags")}
+                    defaultValue={slug ? post.tagList.join(",") : ""}
                     placeholder="Enter tags"
                   />
-                  {/* <div className="tag-list">
-                    <span className="tag-default tag-pill">
-                      {" "}
-                      <i className="ion-close-round" /> tag{" "}
-                    </span>
-                  </div> */}
+                  {slug &&
+                    post.tagList.map((tag: string, index: number) => {
+                      return (
+                        <div key={index} className="tag-list">
+                          <span className="tag-default tag-pill">
+                            {" "}
+                            <i className="ion-close-round" /> {tag}{" "}
+                          </span>
+                        </div>
+                      );
+                    })}
                 </fieldset>
                 <button
                   className="btn btn-lg pull-xs-right btn-primary"
-                  type="button"
-                  disabled={title === "" || description === "" || body === ""}
-                  onClick={(e) => handleSubmit(e)}
+                  type="submit"
+                  disabled={
+                    slug
+                      ? post.title === "" ||
+                        post.description === "" ||
+                        post.body === ""
+                      : false
+                  }
                 >
                   Publish Article
                 </button>

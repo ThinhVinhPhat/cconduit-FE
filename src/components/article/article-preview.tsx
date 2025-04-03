@@ -1,26 +1,18 @@
 import { Link } from "react-router-dom";
-import { usePost } from "../../hooks/usePost";
+import { useArticleContext } from "../../hooks/useArticleContext";
 import { Article } from "../../types";
 import { useRef } from "react";
+import { useArticleAction } from "../../hooks/useArticleAction";
 
 export type ArticlePreviewProps = {
   article: Article;
 };
 
 function ArticlePreview({ article }: ArticlePreviewProps) {
-  const { handleAddFavorite, currentFavorite, setCurrentFavorite } = usePost();
+  const { currentFavorite } = useArticleContext();
+  const { handleFavorite } = useArticleAction();
   const currentFavoriteRef = useRef(article.favoritesCount);
 
-  const handleFavorite = async (id: string) => {
-    await handleAddFavorite(id);
-    if (currentFavorite?.find((item) => item === id)) {
-      setCurrentFavorite(currentFavorite.filter((item) => item !== id));
-      currentFavoriteRef.current = currentFavoriteRef.current - 1;
-    } else {
-      setCurrentFavorite([...currentFavorite, id]);
-      currentFavoriteRef.current = currentFavoriteRef.current + 1;
-    }
-  };
   return (
     <div className="article-preview">
       <div className="article-meta">
@@ -34,7 +26,9 @@ function ArticlePreview({ article }: ArticlePreviewProps) {
           <span className="date">{article.createdAt}</span>
         </div>
         <button
-          onClick={() => handleFavorite(article.id)}
+          onClick={() =>
+            handleFavorite(article.id, currentFavorite, currentFavoriteRef)
+          }
           className={`btn btn-sm btn-outline-primary pull-xs-right ${
             currentFavorite?.find((item) => item === article.id)
               ? "bg-primary"
