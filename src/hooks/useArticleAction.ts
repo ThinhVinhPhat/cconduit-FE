@@ -33,7 +33,7 @@ export const useArticleAction = () => {
   const { data: tagsPost } = useGetByTags(currentTag);
 
   const { data: favoritePost } = useFavoritePosts(offset, 10000);
-  
+
   const { data: posts, isLoading: isLoadingPosts } = useGetPost(
     me?.id || "0",
     offset,
@@ -50,7 +50,7 @@ export const useArticleAction = () => {
     if (!posts && !personalPosts && !favoritePost) return;
 
     if (currentTag && currentTag.length > 0) {
-      setDataPost((prev) => (prev !== tagsPost ? tagsPost : prev));
+      setDataPost((prev: Article[]) => (prev !== tagsPost ? tagsPost : prev));
     } else {
       if (toggle === "global") {
         const newPosts = posts?.articles?.slice(0, 10);
@@ -78,7 +78,6 @@ export const useArticleAction = () => {
     me,
     personalPosts,
     posts,
-    page,
     tagsPost,
     favoritePost,
     dataPost,

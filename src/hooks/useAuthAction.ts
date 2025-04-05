@@ -5,10 +5,17 @@ import { login, register } from "../apis/auth";
 import Cookies from "js-cookie";
 import { enqueueSnackbar } from "notistack";
 import { useGetImageAuth } from "./query/image-upload/getAuth";
+import { useUpdateUser } from "./mutation/user/useUpdateUser";
+import ImageKit from "imagekit";
 
 export const useAuthAction = () => {
   const { setUserLogin, setError } = useAuthContext();
   const { data: imageAuth } = useGetImageAuth();
+  const {
+    data: updateUserData,
+    mutate: mutateUpdateUser,
+    isPending: isUpdating,
+  } = useUpdateUser();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -18,8 +25,15 @@ export const useAuthAction = () => {
     }
   }, [setUserLogin]);
 
+  //imagekit
+  const imageKit = new ImageKit({
+    publicKey: "public_EDgp88ndVCN1OaMZMgMXhJwh6yA=",
+    urlEndpoint: "https://ik.imagekit.io/qinoqbrbp",
+    privateKey: "private_lbRKx8mHgXwOne5YoluvZLslqBk=",
+  });
+
   //login
-  const handleLogin = async (email: string, password: string) => {
+  const loginUser = async (email: string, password: string) => {
     try {
       const response = await login(email, password);
       if (response.accessToken) {
@@ -41,7 +55,7 @@ export const useAuthAction = () => {
     }
   };
   //register
-  const handleRegister = async (
+  const registerUser = async (
     username: string,
     email: string,
     password: string
@@ -65,8 +79,35 @@ export const useAuthAction = () => {
     }
   };
 
+  //update user
+  const updateUser = async (data: any) => {
+    try {
+      const upload =
+        data.avatar && typeof data.avatar !== "string"
+          ? await imageKit.upload({
+              file: data.avatar[0],
+              fileName: data.name || "",
+              token: imageAuth?.data?.token || "",
+              signature: imageAuth?.data?.signature || "",
+              expire: imageAuth?.data?.expire || "",
+              publicKey: imageAuth?.data?.publicKey || "",
+            })
+          : null;
+
+      await mutateUpdateUser({
+        avatar: upload?.url || data.avatar,
+        name: data.name,
+        description: data.description,
+      });
+      return updateUserData;
+    } catch (error: any) {
+      console.log(error);
+      return null;
+    }
+  };
+
   //logout
-  const handleLogout = () => {
+  const logoutUser = () => {
     Cookies.remove("accessToken");
     setUserLogin(false);
     queryClient.clear();
@@ -77,8 +118,10 @@ export const useAuthAction = () => {
 
   return {
     imageAuth,
-    handleLogin,
-    handleRegister,
-    handleLogout,
+    isUpdating,
+    loginUser,
+    registerUser,
+    logoutUser,
+    updateUser,
   };
 };

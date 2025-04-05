@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Article, User } from "../types";
 import Button from "./Button";
 
@@ -9,13 +10,13 @@ type UserBarHolderProps = {
 export const UserBarHolder = ({ post, me }: UserBarHolderProps) => {
   return (
     <div className="article-meta">
-      <a href="profile.html">
+      <Link to={`/profile/${post?.author?.username}`}>
         <img src={post?.author?.image} />
-      </a>
+      </Link>
       <div className="info">
-        <a href="" className="author">
+        <Link to={`/profile/${post?.author?.username}`} className="author">
           {post?.author?.username}
-        </a>
+        </Link>
         <span className="date">
           {new Date(post?.createdAt).toLocaleDateString()}
         </span>

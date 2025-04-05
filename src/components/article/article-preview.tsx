@@ -3,7 +3,7 @@ import { useArticleContext } from "../../hooks/useArticleContext";
 import { Article } from "../../types";
 import { useRef } from "react";
 import { useArticleAction } from "../../hooks/useArticleAction";
-
+import defaultAvatar from "../../assets/gray-user-profile-icon-png-fP8Q1P.png";
 export type ArticlePreviewProps = {
   article: Article;
 };
@@ -16,13 +16,13 @@ function ArticlePreview({ article }: ArticlePreviewProps) {
   return (
     <div className="article-preview">
       <div className="article-meta">
-        <a href={`/profile/${article.author.username}`}>
-          <img src={article.author.image} />
-        </a>
+        <Link to={`/profile/${article.author.username}`}>
+          <img src={article.author.image || defaultAvatar} />
+        </Link>
         <div className="info">
-          <a href={`/profile/${article.author.username}`} className="author">
+          <Link to={`/profile/${article.author.username}`} className="author">
             {article.author.username}
-          </a>
+          </Link>
           <span className="date">{article.createdAt}</span>
         </div>
         <button

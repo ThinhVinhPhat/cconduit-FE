@@ -5,11 +5,14 @@ import { useGetMe } from "../../hooks/query/user/useGetMe";
 import { useArticleAction } from "../../hooks/useArticleAction";
 import { useArticleDetail } from "../../hooks/query/article/usePostDetail";
 import { useForm } from "react-hook-form";
+import { FormField } from "../../components/form/formField";
+import checkChanges from "../../ultis/checkChanges";
+import { enqueueSnackbar } from "notistack";
 
 interface IFormInput {
   id: string;
   title: string;
-  shortDescription: string;
+  description: string;
   tags: string;
 }
 function PostFormPage() {
@@ -17,37 +20,66 @@ function PostFormPage() {
   const { slug } = useParams();
   const { data: post } = useArticleDetail(slug, me?.id);
   const { createArticle, updateArticle } = useArticleAction();
-  const [description, setDescription] = useState(slug ? post.description : "");
+  const [body, setBody] = useState(slug ? post.body : "");
   const navigate = useNavigate();
-  const { register, handleSubmit, setValue } = useForm<IFormInput>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<IFormInput>({
     defaultValues: {
       id: slug ? post.id : "",
       title: slug ? post.title : "",
-      shortDescription: slug ? post.shortDescription : "",
-      tags: slug ? post.tagList.join(",") : "",
+      description: slug ? post.description : "",
+      tags: slug ? post?.tagList?.join(",") : "",
     },
   });
+
+  const tags = watch("tags");
+  const title = watch("title");
+  const description = watch("description");
 
   const onSubmit = (data: IFormInput) => {
     const completeData = {
       ...data,
-      description: description,
+      body: body,
       tags: data.tags.split(","),
     };
     if (slug) {
-      updateArticle(completeData);
-      try {
-        navigate(-1);
-      } catch (error) {
-        console.log(error);
+      const isChanges = checkChanges(
+        {
+          title: title,
+          description: description,
+          body: body,
+          tags: tags,
+        },
+        {
+          title: post.title,
+          description: post.description,
+          body: post.body,
+          tags: post.tagList,
+        }
+      );
+      if (!isChanges) {
+        enqueueSnackbar("No changes to update", { variant: "info" });
+        return;
+      } else {
+        updateArticle(completeData);
+        try {
+          navigate(-1);
+        } catch (error) {
+          console.log(error);
+        }
       }
     } else {
       const result = createArticle(completeData);
       if (result) {
         setValue("title", "");
-        setValue("shortDescription", "");
+        setValue("description", "");
         setValue("tags", "");
-        setDescription("");
+        setBody("");
       }
     }
   };
@@ -68,28 +100,17 @@ function PostFormPage() {
             </ul> */}
             <form onSubmit={handleSubmit(onSubmit)}>
               <fieldset>
-                <fieldset className="form-group">
-                  <input
-                    type="text"
-                    defaultValue={slug ? post.title : ""}
-                    {...register("title")}
-                    className="form-control form-control-lg"
-                    placeholder="Article Title"
+                {["title", "description"].map((field) => (
+                  <FormField
+                    label={field}
+                    error={errors[field as keyof IFormInput]}
+                    {...register(field, { value: slug ? post[field] : "" })}
                   />
-                </fieldset>
-                <fieldset className="form-group">
-                  <input
-                    type="text"
-                    defaultValue={slug ? post.shortDescription : ""}
-                    {...register("shortDescription")}
-                    className="form-control"
-                    placeholder="What's this article about?"
-                  />
-                </fieldset>
+                ))}
                 <fieldset className="form-group">
                   <Editor
-                    onChange={(e) => setDescription(e.target.getContent())}
-                    initialValue={description}
+                    onChange={(e) => setBody(e.target.getContent())}
+                    initialValue={body}
                     apiKey="lccx10ru49zi7f696fkhycfyir5ul90gm7j471cdhdytzd2c"
                     init={{
                       height: 500,
@@ -101,12 +122,12 @@ function PostFormPage() {
                   />
                 </fieldset>
                 <fieldset className="form-group">
-                  <input
-                    type="text"
-                    className="form-control"
-                    {...register("tags")}
-                    defaultValue={slug ? post.tagList.join(",") : ""}
-                    placeholder="Enter tags"
+                  <FormField
+                    label="Tags"
+                    error={errors.tags}
+                    {...register("tags", {
+                      value: slug ? post.tagList.join(",") : "",
+                    })}
                   />
                   {slug &&
                     post.tagList.map((tag: string, index: number) => {

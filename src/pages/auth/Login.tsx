@@ -1,17 +1,24 @@
-import { useState } from "react";
 import ErrorMessage from "../../components/error";
+import { FormField } from "../../components/form/formField";
 import { useAuthAction } from "../../hooks/useAuthAction";
+import { useForm } from "react-hook-form";
 
 function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { handleLogin } = useAuthAction();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    handleLogin(email, password);
-    setEmail("");
-    setPassword("");
+  const { loginUser } = useAuthAction();
+
+  const onSubmit = (data: any) => {
+    loginUser(data.email, data.password);
   };
 
   return (
@@ -23,24 +30,24 @@ function LoginPage() {
             <p className="text-xs-center">
               <a href="/register">Need an account?</a>
             </p>
-            <ErrorMessage />
-            <form onSubmit={(e) => handleSubmit(e)}>
+            <ErrorMessage errors={errors.email?.message} />
+            <form onSubmit={handleSubmit(onSubmit)}>
               <fieldset className="form-group">
-                <input
+                <label htmlFor="email">Email</label>
+                <FormField
                   className="form-control form-control-lg"
-                  type="text"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  label="Email"
+                  error={errors.email}
+                  {...register("email", { required: true })}
                 />
               </fieldset>
               <fieldset className="form-group">
-                <input
+                <label htmlFor="password">Password</label>
+                <FormField
                   className="form-control form-control-lg"
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  label="Password"
+                  error={errors.password}
+                  {...register("password", { required: true })}
                 />
               </fieldset>
               <button

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ImageKit from "imagekit";
 import { Editor } from "@tinymce/tinymce-react";
 import { useGetMe } from "../../hooks/query/user/useGetMe";
 import { useAuthAction } from "../../hooks/useAuthAction";
@@ -8,72 +7,62 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import UserAvatar from "../../components/UserAvatar";
 import clsx from "clsx";
 import { enqueueSnackbar } from "notistack";
-import { IFormInput, User } from "../../types/user";
-import { useUpdateUser } from "../../hooks/mutation/user/useUpdateUser";
+import { IFormInput } from "../../types/user";
 import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import checkChanges from "../../ultis/checkChanges";
 
 function SettingPage() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const { data: me } = useGetMe();
-  const { register, handleSubmit, setValue, getValues } = useForm<IFormInput>({
-    defaultValues: {
-      name: me?.name,
-      description: me?.description,
-      avatar: me?.avatar,
-    },
-  });
-  const { handleLogout, imageAuth } = useAuthAction();
+  const [description, setDescription] = useState<string | undefined>(
+    me?.description
+  );
+  const { register, handleSubmit, setValue, getValues, watch } =
+    useForm<IFormInput>({
+      defaultValues: {
+        name: me?.name,
+        avatar: me?.avatar,
+      },
+    });
+  const { logoutUser, updateUser, isUpdating } = useAuthAction();
   const navigate = useNavigate();
-  const {
-    data: updateData,
-    mutate: updateUser,
-    isPending: isUpdating,
-  } = useUpdateUser();
-  const imageKit = new ImageKit({
-    publicKey: "public_EDgp88ndVCN1OaMZMgMXhJwh6yA=",
-    urlEndpoint: "https://ik.imagekit.io/qinoqbrbp",
-    privateKey: "private_lbRKx8mHgXwOne5YoluvZLslqBk=",
-  });
 
   useEffect(() => {
     if (!me) {
       navigate("/");
     }
-    setCurrentUser(me);
   }, [me]);
 
-  const onSubmit: SubmitHandler<IFormInput> = async (data) => {
-    if (
-      getValues("avatar") === me?.avatar &&
-      getValues("name") === me?.name &&
-      getValues("description") === me?.description
-    ) {
-      enqueueSnackbar("No changes to update", { variant: "info" });
+  const name = watch("name");
+  const avatar = watch("avatar");
+
+  const isChanges = checkChanges(
+    {
+      avatar: avatar,
+      name: name,
+      description: description,
+    },
+    {
+      avatar: me?.avatar,
+      name: me?.name,
+      description: me?.description,
     }
+  );
 
-    const upload =
-      data.avatar && typeof data.avatar !== "string"
-        ? await imageKit.upload({
-            file: data.avatar[0],
-            fileName: data.name || "",
-            token: imageAuth?.data?.token || "",
-            signature: imageAuth?.data?.signature || "",
-            expire: imageAuth?.data?.expire || "",
-            publicKey: imageAuth?.data?.publicKey || "",
-          })
-        : null;
-
-    await updateUser({
-      avatar: upload?.url || data.avatar,
-      name: data.name,
-      description: data.description,
-    });
-
-    setCurrentUser(me || null);
-
-    setValue("avatar", "");
-    setValue("name", "");
-    setValue("description", "");
+  const onSubmit: SubmitHandler<IFormInput> = async (data) => {
+    const completeData = {
+      ...data,
+      description: description,
+    };
+    if (!isChanges) {
+      enqueueSnackbar("No changes to update", { variant: "info" });
+      return;
+    }
+    const result = await updateUser(completeData);
+    if (result) {
+      setValue("avatar", result?.image);
+      setValue("name", result?.username);
+      setDescription(() => result?.bio);
+    }
   };
 
   return isUpdating ? (
@@ -98,23 +87,22 @@ function SettingPage() {
                   />
                 </fieldset>
                 <UserAvatar
-                  image={getValues("avatar") || currentUser?.avatar}
+                  image={getValues("avatar") || me?.avatar}
                   size="sm"
-                  username={getValues("name") || currentUser?.name}
+                  username={getValues("name") || me?.name}
                 />
                 <fieldset className="form-group">
                   <input
                     className="form-control form-control-lg"
                     type="text"
                     placeholder="Your Name"
-                    defaultValue={currentUser?.name}
-                    {...register("name")}
+                    {...register("name", { value: me?.name })}
                   />
                 </fieldset>
                 <fieldset className="form-group">
                   <Editor
-                    initialValue={currentUser?.description}
-                    {...register("description")}
+                    initialValue={me?.description}
+                    onChange={(e) => setDescription(e.target.getContent())}
                     apiKey="lccx10ru49zi7f696fkhycfyir5ul90gm7j471cdhdytzd2c"
                     init={{
                       height: 500,
@@ -130,7 +118,7 @@ function SettingPage() {
                     className="form-control form-control-lg"
                     type="text"
                     placeholder="Email"
-                    defaultValue={currentUser?.email}
+                    defaultValue={me?.email}
                     disabled
                   />
                 </fieldset>
@@ -151,7 +139,7 @@ function SettingPage() {
             <hr />
             <button
               onClick={() => {
-                handleLogout();
+                logoutUser();
                 navigate("/", { replace: true, preventScrollReset: true });
               }}
               className="btn btn-outline-danger"

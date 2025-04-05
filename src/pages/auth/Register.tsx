@@ -1,14 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import ErrorMessage from "../../components/error";
 import { useNavigate } from "react-router-dom";
 import { useAuthAction } from "../../hooks/useAuthAction";
 import { useGetMe } from "../../hooks/query/user/useGetMe";
+import { useForm } from "react-hook-form";
+import { FormField } from "../../components/form/formField";
 
 function RegisterPage() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { handleRegister } = useAuthAction();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+    },
+  });
+  const { registerUser } = useAuthAction();
   const { data: me } = useGetMe();
   const navigate = useNavigate();
 
@@ -18,12 +28,8 @@ function RegisterPage() {
     }
   }, [me]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    handleRegister(username, email, password);
-    setUsername("");
-    setEmail("");
-    setPassword("");
+  const onSubmit = (data: any) => {
+    registerUser(data.username, data.email, data.password);
   };
 
   return (
@@ -35,33 +41,33 @@ function RegisterPage() {
             <p className="text-xs-center">
               <a href="/login">Have an account?</a>
             </p>
-            <ErrorMessage />
-            <form onSubmit={(e) => handleSubmit(e)}>
+            <ErrorMessage errors={errors.username?.message} />
+            <form onSubmit={handleSubmit(onSubmit)}>
               <fieldset className="form-group">
-                <input
-                  className="form-control form-control-lg"
-                  type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                <FormField
+                  label="Username"
+                  error={errors.username}
+                  {...register("username", { required: true })}
                 />
               </fieldset>
               <fieldset className="form-group">
-                <input
-                  className="form-control form-control-lg"
-                  type="text"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                <FormField
+                  label="Email"
+                  error={errors.email}
+                  {...register("email", {
+                    required: true,
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Invalid email address",
+                    },
+                  })}
                 />
               </fieldset>
               <fieldset className="form-group">
-                <input
-                  className="form-control form-control-lg"
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                <FormField
+                  label="Password"
+                  error={errors.password}
+                  {...register("password", { required: true })}
                 />
               </fieldset>
               <button className="btn btn-lg btn-primary pull-xs-right">

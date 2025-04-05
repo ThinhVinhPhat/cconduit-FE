@@ -15,6 +15,6 @@ export const useUpdateUser = () => {
   });
   return {
     ...response,
-    data: response?.data?.user,
+    data: response?.data?.user || null,
   };
 };

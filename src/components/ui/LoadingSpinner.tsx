@@ -32,6 +32,9 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        border: `2px solid ${colorClasses[color]}`,
+        borderRadius: "50%",
+        padding: "2px",
       }}
     >
       <div
@@ -42,6 +45,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           width: sizeClasses[size],
           height: sizeClasses[size],
           animation: "spin 1s linear infinite",
+          borderColor: colorClasses[color],
         }}
       />
     </div>
